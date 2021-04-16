@@ -1,37 +1,51 @@
 ---
 title: RIOT Hands-on Tutorial
-author: Martine Lenders
+author: Martine Sophie Lenders
+mainfont: Linux Biolinum O
+classoption:
+- aspectratio=169
 ...
 
 # Starting the RIOT
-## Preparations
-\tiny
+## Preparations (1)
+* Homework:
+    - Setup PC for compiling RIOT (+ test your setup)
+      <div style="text-align: center">
+            https://github.com/RIOT-OS/Tutorials
+      </div>
+    - Create an IoT-LAB account
+- Install `iotlabcli` (in the VM when using Vagrant) for python:
+  ```sh
+  pip3 install iotlabcli
+  ```
+- Make sure SSH is configured on your system (or VM):
+  ```sh
+  ssh-keygen
+  cat .ssh/id_rsa.pub
+  # copy to SSH keys at
+  #   https://www.iot-lab.info/testbed/account
+  ssh "<iotlab user>"@lille.iot-lab.info
+  # say "yes" and log out again using `exit`
+  ```
 
-For links go to [https://github.com/RIOT-OS/Tutorials](https://github.com/RIOT-OS/Tutorials)
-
-**Quick Setup** (Using a Virtual Machine)
-
-* Install and set up [git](https://help.github.com/articles/set-up-git/)
-* Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) & [VirtualBox Extension Pack](https://www.virtualbox.org/wiki/Downloads)
-* Install [Vagrant](https://www.vagrantup.com/downloads.html)
-* `git clone --recursive https://github.com/RIOT-OS/Tutorials`
-* Go to RIOT root directory: `cd Tutorials/RIOT`
-* Run the [Vagrant RIOT Setup](https://github.com/RIOT-OS/RIOT/blob/master/dist/tools/vagrant/README.md)
-* Make sure you've run `vagrant ssh` and clone the Tutorials folder again, now in your virtual machine: `git clone --recursive https://github.com/RIOT-OS/Tutorials`
-
-**Recommended Setup** (Without Using a VM)
-
-* Install and set up [git](https://help.github.com/articles/set-up-git/)
-* Install the build-essential packet (make, gcc etc.). This varies based on the operating system in use.
-* Install [Native dependencies](https://github.com/RIOT-OS/RIOT/wiki/Family:-native#dependencies)
-* Install [OpenOCD](https://github.com/RIOT-OS/RIOT/wiki/OpenOCD)
-* Install [GCC Arm Embedded Toolchain](https://launchpad.net/gcc-arm-embedded)
-* On OS X: install [Tuntap for OS X](http://tuntaposx.sourceforge.net/)
-* [additional tweaks](https://github.com/RIOT-OS/RIOT/wiki/Board:-Samr21-xpro) necessary to work with the targeted hardware (ATSAMR21)
-* Install `netcat` with IPv6 support (if necessary)\
-  `sudo apt-get install netcat-openbsd`
-* `git clone --recursive https://github.com/RIOT-OS/Tutorials`
-* Go to the Tutorials directory: `cd Tutorials`
+## Preparations (2)
+- There is a GUI dashboard, but we will use the CLI
+  <div style="text-align: center">
+        https://www.iot-lab.info/testbed/dashboard
+  </div>
+- Log into IoT-LAB using `iotlabcli`: `iotlab-auth -u "<iotlab user>"`
+- Start a 2 hour experiment on the Testbed
+  ```sh
+  iotlab-experiment submit -d 120 \
+    --list 1,site=lille+archi=m3:at86rf231
+  ```
+  ```json
+  {
+      "id": 234780
+  }
+  ```
+- Get experiment information: `iotlab-experiment get -n -i 234780`
+- Note down `network_address` of your node
 
 ## Running RIOT
 * Applications in RIOT consist at minimum of
@@ -101,9 +115,12 @@ int main(void)
     - Look at the result
 
 ## Task 1.2: Run your first application on real hardware
-1. Compile, flash and run on `samr21-xpro` \
-    `BOARD=samr21-xpro make all flash term` \
-    (or other `BOARD` if available)
+1. Compile, flash and run on `iotlab-m3`
+   ```sh
+    BOARD=iotlab-m3 \
+    IOTLAB_NODE="<your network_address>" \
+        make all flash term
+   ```
 2. Verify output of `RIOT_BOARD`
 
 # RIOT's architecture
@@ -237,8 +254,8 @@ USEMODULE += xtimer
 ## RIOT's Networking architecture
 * Designed to integrate any network stack into RIOT
 
-\only{<1>}{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}}
-\only{<2>}{\includegraphics[width=\textwidth]{pictures/overview-net-netdev.pdf}}
+\only<1>{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}}
+\only<2>{\includegraphics[width=\textwidth]{pictures/overview-net-netdev.pdf}}
 
 ## Including the network device driver
 * Go to task-05 directory (`cd ../task-05`)
@@ -269,13 +286,24 @@ USEMODULE += auto_init_gnrc_netif
 * Use `txtsnd` command to exchange messages between the two instances
 
 ## Task 5.2 -- Use your application on real hardware
-* Compile, flash, and run on the board `BOARD=samr21-xpro make all flash term`
+* Compile, flash, and run on the board
+  ```sh
+  BOARD=iotlab-m3 \
+  IOTLAB_NODE="<your network_address>" \
+    make all flash term
+  ```
 * Type `ifconfig` to get your hardware addresses
+* Use map at
+  <div style="text-align: center">
+        https://www.iot-lab.info/testbed/status
+  </div>
+  and talk to each other to find out who your neighbors are
 * Use `txtsnd` to send one of your neighbors a friendly message
 
 ## RIOT's Networking architecture
-\only{<1>}{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}}
-\only{<2>}{\includegraphics[width=\textwidth]{pictures/overview-net-sock.pdf}}
+
+\only<1>{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}}
+\only<2>{\includegraphics[width=\textwidth]{pictures/overview-net-sock.pdf}}
 
 ## sock
 * collection of unified connectivity APIs to the transport layer
@@ -307,7 +335,7 @@ USEMODULE += auto_init_gnrc_netif
 * Send a packet to RIOT from Linux using `netcat`
 
 ```sh
-echo "hello" | nc -6u <RIOT-IPv6-addr>%tap0 8888
+echo "hello" | nc -6u <RIOT-IPv6-addr>%tapbr0 8888
 ```
 
 * Start a UDP server on Linux `nc -6lu 8888`
@@ -315,11 +343,92 @@ echo "hello" | nc -6u <RIOT-IPv6-addr>%tap0 8888
   `udp <tap0-IPv6-addr> 8888 hello`
 
 ## Task 6.3 -- Exchange UDP packets with your neighbors
-* Compile, flash and run on the board `BOARD=samr21-xpro make all flash term`
+* Compile, flash, and run on the board
+  ```sh
+  BOARD=iotlab-m3 \
+  IOTLAB_NODE="<your network_address>" \
+    make all flash term
+  ```
 * Send and receive UDP messages to and from your neighbors using `udp` and `udps`
 
+# SAUL
+## Better call SAUL!
+- The Sensor/Actuator Uber Layer (SAUL) is a sensor/actuator abstraction layer
+  for RIOT
+- Device drivers can be registered via the SAUL registry
+- Read/write Access via common API:
+
+\tiny
+```C
+#include <stdio.h>
+
+#include "saul_reg.h"
+
+int main(void)
+{
+    saul_reg_t *dev = saul_reg;
+
+    while (dev) {
+        int dim;
+        phydat_t res;
+
+        dim = saul_reg_read(dev, &res);
+        if (dim <= 0) {
+            continue;
+        }
+        puts(dev->name);
+        phydat_dump(&res, dim);
+        dev = dev->next;
+    }
+    return 0;
+}
+```
+
+## Task 7.1 -- Use SAUL
+* Go to `saul` example in RIOT directory `cd ../RIOT/examples/saul`
+* The `main.c` does not contain much
+* `shell_command` module magic! So have a look at the Makefile:
+    - `saul_default` pulls in everything you need
+* Compile, flash, and run on the board
+  ```sh
+  BOARD=iotlab-m3 \
+  IOTLAB_NODE="<your network_address>" \
+    make all flash term
+  ```
+* Command `saul` lists all actuators and sensors
+* Read the sensor data using the `saul read` command
+* You can also toggle the LEDs again using `saul write`
+
+## Task 7.2 -- Familiarize yourself with the API
+* SAUL example did not contain any API usage
+* Go back to the RIOT root directory: `cd ../..`
+* Shell commands pulled in by the `shell_commands` module are in
+  `sys/shell/commands`
+* Have a look at `sc_saul_reg.c`:
+    - `list()` implements `saul` command
+    - `read()` implements `saul read` command
+    - `write()` implements `saul write` command
+* More functions described at [https://doc.riot-os.org/group__sys__saul__reg.html](https://doc.riot-os.org/group__sys__saul__reg.html)
+
+
+# There is so much more!
+## Where can I learn more about RIOT?
+- Have a look at the examples (and also the tests) in RIOT
+
+```sh
+ls RIOT/examples
+ls RIOT/tests
+ls RIOT/sys/shell/commands
+```
+
+
+- Read the documentation at [https://doc.riot-os.org](https://doc.riot-os.org)
+- Have questions? Don't hesitate to ask the friendly community at [https://forum.riot-os.org](https://forum.riot-os.org)
+  or [in the #riot-os:matrix.org chat](https://matrix.to/#riot-os:matrix.org)
+<!--
 # GNRC
 ## The components of GNRC
+
 ![](pictures/gnrc-arch.svg)
 
 ## `netapi`
@@ -399,7 +508,7 @@ ls
 
 ![](pictures/gnrc_minimal_eth.svg)
 
-## `gnrc_minimal` example (`samr21-xpro`)
+## `gnrc_minimal` example (`iotlab-m3`)
 
 ![](pictures/gnrc_minimal_ieee802154.svg)
 
@@ -420,7 +529,7 @@ Pseudo-module dependencies
 
 ![](pictures/gnrc_minimal_eth_dep.svg)
 
-## `gnrc_minimal` example (`samr21-xpro`)
+## `gnrc_minimal` example (`iotlab-m3`)
 
 ![](pictures/gnrc_minimal_ieee802154_dep.svg)
 
@@ -434,7 +543,7 @@ Pseudo-module dependencies
 ping6 <RIOT-IPv6-addr>%tap0
 ```
 
-## `gnrc_minimal` example (`samr21-xpro`)
+## `gnrc_minimal` example (`iotlab-m3`)
 * Adding a simple application
 
 ![](pictures/gnrc_minimal_app.svg)
@@ -472,7 +581,7 @@ echo "hello" | nc -6u <RIOT-IPv6-addr>%tap0 8888
 
 ![](pictures/gnrc_networking_eth.svg)
 
-## `gnrc_networking` example (`samr21-xpro`)
+## `gnrc_networking` example (`iotlab-m3`)
 
 ![](pictures/gnrc_networking_ieee802154.svg)
 
@@ -489,14 +598,19 @@ Pseudo-module dependencies
 
 ![](pictures/gnrc_networking_eth_dep.svg)
 
-## `gnrc_networking` example (`samr21-xpro`)
+## `gnrc_networking` example (`iotlab-m3`)
 
 ![](pictures/gnrc_networking_ieee802154_dep.svg)
 
 ## Task 7.3 -- Send your neighbor some messages again
 * Go to `gnrc_networking` example: `cd ../gnrc_networking`
 * Have a look in `udp.c` how packets are constructed and sent
-* Compile, flash, and run on the board `BOARD=samr21-xpro make all flash term`
+* Compile, flash, and run on the board
+  ```sh
+    BOARD=iotlab-m3 \
+    IOTLAB_NODE="<your network_address>" \
+        make all flash term
+  ```
 * Type `help`
 * Start UDP server on port 8888 using `udp server 8888`
 * Get your IPv6 address using `ifconfig`
@@ -532,7 +646,6 @@ Pseudo-module dependencies
 
 ## `gnrc_border_router` example
 
-![](pictures/gnrc_border_router.svg)
+![](pictures/gnrc_border_router.svg)  -->
 
 # Now go out and make something!
-* Final slide

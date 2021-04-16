@@ -14,10 +14,10 @@ from pandocfilters import toJSONFilter, Image
 
 # TODO add emf export if fmt=="docx" ?
 fmt_to_option = {
-    "latex": ("--export-pdf", "pdf"),
-    "beamer": ("--export-pdf", "pdf"),
+    "latex": ("--export-filename", "pdf"),
+    "beamer": ("--export-filename", "pdf"),
     # because of IE
-    "html": ("--export-png", "png")
+    "html": ("--export-filename", "png")
 }
 
 

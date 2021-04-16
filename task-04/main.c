@@ -9,8 +9,11 @@ char stack[THREAD_STACKSIZE_MAIN];
 
 void *thread_handler(void *arg)
 {
-    /* ... */
     (void)arg;
+    while (1) {
+        xtimer_sleep(2);
+        printf("Current system time: %lu\n", (long unsigned)xtimer_now_usec());
+    }
     return NULL;
 }
 

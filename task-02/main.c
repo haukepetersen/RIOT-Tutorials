@@ -1,11 +1,21 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "led.h"
 #include "shell.h"
 
 int echo(int argc, char **argv)
 {
-    /* ... */
+    puts(argv[1]);
+    (void)argc;
+    (void)argv;
+
+    return 0;
+}
+
+int led(int argc, char **argv)
+{
+    LED0_TOGGLE;
     (void)argc;
     (void)argv;
 
@@ -13,6 +23,8 @@ int echo(int argc, char **argv)
 }
 
 static const shell_command_t commands[] = {
+    { "echo", "This is the helpful help for echo", echo },
+    { "led", "Toggle LED", led },
     { NULL, NULL, NULL }
 };
 
