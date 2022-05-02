@@ -1,8 +1,8 @@
 SRC := slides.md
 SCRIPTDIR=scripts
-FILENAME := tutorial-slides
+FILENAME := tutorial-slides2
 DEPS := preamble-caption.tex
-PDFLAGS := -s -S -t beamer --latex-engine=xelatex --slide-level=2
+PDFLAGS := -s -t beamer --pdf-engine=xelatex --slide-level=2
 PDFLAGS += --filter=$(SCRIPTDIR)/pandoc-svg
 PDFLAGS += --filter=$(SCRIPTDIR)/overlay
 DEPS += $(patsubst %.svg,%.pdf,$(wildcard pictures/6lowpan-route-over*.svg)\

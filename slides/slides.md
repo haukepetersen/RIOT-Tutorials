@@ -1,6 +1,6 @@
 ---
 title: RIOT Hands-on Tutorial
-author: Martine Lenders
+author: Martine Lenders, Hauke Petersen
 ...
 
 # Starting the RIOT
@@ -213,20 +213,23 @@ pid = thread_create(stack, sizeof(stack),
 * Check your output, it should read: `I'm in "thread" now`
 
 # Timers
-## `xtimer` primer
-* `xtimer` is the high level API of RIOT to multiplex hardware timers
+## `ztimer` primer
+* `ztimer` is the high level API of RIOT to multiplex hardware timers
 * Examples for functionality:
-    - `xtimer_now_usec()` to get current system time in microseconds
-    - `xtimer_sleep(sec)` to sleep `sec` seconds
-    - `xtimer_usleep(usec)` to sleep `usec` microseconds
+    - `ztimer_now(ZTIMER_MSEC)` to get current system time in milliseconds
+    - `ztimer_sleep(ZTIMER_SEC, sec)` to sleep `sec` seconds
+    - `ztimer_sleep(ZTIMER_USEC, usec)` to sleep `usec` microseconds
+* The used timer must be included to the build:
+    - e.g. put `USEMODULE += ztimer_msec` in the application Makefile
+* Use the coarsest timer possible for the job to allow maximum energy efficiency
 
-## Task 4.1 -- Use `xtimer`
-* Reminder: Functions `xtimer_now_usec()`, `xtimer_sleep()`, and `xtimer_usleep()` were introduced
+## Task 4.1 -- Use `ztimer`
+* Reminder: Functions `ztimer_now()' and `ztimer_sleep()` were introduced
 * Go to task-04 directory (`cd ../task-04`)
-* Note the inclusion of `xtimer` in Makefile
+* Note the inclusion of `ztimer_X` in Makefile
 
 ```Makefile
-USEMODULE += xtimer
+USEMODULE += ztimer_sec
 ```
 
 * Create a thread in `main.c` that prints the current system time every 2 seconds
@@ -238,7 +241,7 @@ USEMODULE += xtimer
 * Designed to integrate any network stack into RIOT
 
 \only{<1>}{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}}
-\only{<2>}{\includegraphics[width=\textwidth]{pictures/overview-net-netdev.pdf}}
+<!-- \only{<2>}{\includegraphics[width=\textwidth]{pictures/overview-net-netdev.pdf}} -->
 
 ## Including the network device driver
 * Go to task-05 directory (`cd ../task-05`)
@@ -274,7 +277,7 @@ USEMODULE += auto_init_gnrc_netif
 * Use `txtsnd` to send one of your neighbors a friendly message
 
 ## RIOT's Networking architecture
-\only{<1>}{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}}
+<!-- \only{<1>}{\includegraphics[width=\textwidth]{pictures/overview-net.pdf}} -->
 \only{<2>}{\includegraphics[width=\textwidth]{pictures/overview-net-sock.pdf}}
 
 ## sock
