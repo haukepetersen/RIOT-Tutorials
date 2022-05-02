@@ -3,7 +3,7 @@
 
 #include "shell.h"
 #include "thread.h"
-#include "xtimer.h"
+#include "ztimer.h"
 
 char stack[THREAD_STACKSIZE_MAIN];
 
